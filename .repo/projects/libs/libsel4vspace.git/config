@@ -1,0 +1,7 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+[remote "heshamelmatary"]
+	url = https://github.com/heshamelmatary/libsel4vspace.git
+	projectname = libsel4vspace.git
+	fetch = +refs/heads/*:refs/remotes/heshamelmatary/*

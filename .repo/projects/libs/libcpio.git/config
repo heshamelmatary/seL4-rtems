@@ -1,0 +1,7 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+[remote "heshamelmatary"]
+	url = https://github.com/heshamelmatary/libcpio.git
+	projectname = libcpio.git
+	fetch = +refs/heads/*:refs/remotes/heshamelmatary/*

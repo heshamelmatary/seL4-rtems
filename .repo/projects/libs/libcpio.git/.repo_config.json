@@ -1,0 +1,17 @@
+{
+  "core.repositoryformatversion": [
+    "0"
+  ], 
+  "remote.heshamelmatary.projectname": [
+    "libcpio.git"
+  ], 
+  "core.filemode": [
+    "true"
+  ], 
+  "remote.heshamelmatary.fetch": [
+    "+refs/heads/*:refs/remotes/heshamelmatary/*"
+  ], 
+  "remote.heshamelmatary.url": [
+    "https://github.com/heshamelmatary/libcpio.git"
+  ]
+}
