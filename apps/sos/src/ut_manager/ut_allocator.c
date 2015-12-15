@@ -22,6 +22,9 @@
 #define FLOOR14(x) ((x) & ~((1 << 14) - 1))
 #define CEILING14(x) FLOOR14((x) + (1 << 14) - 1)
 
+#define FLOOR24(x) ((x) & ~((1 << 24) - 1))
+#define CEILING24(x) FLOOR24((x) + (1 << 24) - 1)
+
 typedef struct suballocator {
     struct suballocator** prev;
     struct suballocator* next;
@@ -30,7 +33,7 @@ typedef struct suballocator {
 } suballocator_t;
 
 
-
+static bitfield_t*     _pool24 = NULL;
 static bitfield_t*     _pool14 = NULL;
 static bitfield_t*     _pool12 = NULL;
 static bitfield_t*     _pool10 = NULL;
@@ -40,8 +43,8 @@ static suballocator_t* _pool4  = NULL;
 static int _initialised = 0;
 static seL4_Word _pool_base = 0;
 
-#define PRIMARY_POOL_SIZEBITS 14
-#define PRIMARY_POOL          _pool14
+#define PRIMARY_POOL_SIZEBITS 24
+#define PRIMARY_POOL          _pool24
 
 
 /*********************
@@ -111,6 +114,9 @@ static seL4_Word do_ut_alloc_from_bitfield(int sizebits){
 
     /* Select the appropriate pool */
     switch(sizebits){
+    case 24:
+        pool = _pool24;
+        break;
     case 14: 
         pool = _pool14;
         break;
@@ -149,6 +155,8 @@ static void do_ut_free_from_bitfield(seL4_Word addr, int sizebits){
 
     /* Select the correct pool */
     switch(sizebits){
+    case 24: 
+        pool = _pool24;
     case 14:
         pool = _pool14;
         break;
@@ -222,7 +230,7 @@ static suballocator_t* _pool_list_find_base(suballocator_t* pool, seL4_Word base
 
         pool = pool->next;
     }
-    return NULL;
+    return NULL;//low = 0x01960000;
 }
 
 static suballocator_t* _pool_list_find_free(suballocator_t* pool){
@@ -357,13 +365,14 @@ void ut_allocator_init(seL4_Word low, seL4_Word high){
     mem_size = high - low;
 
     _pool_base = low;
+    _pool24 = new_bitfield(mem_size >> 24, BITFIELD_INIT_FILLED);
     _pool14 = new_bitfield(mem_size >> 14, BITFIELD_INIT_FILLED);
     _pool12 = new_bitfield(mem_size >> 12, BITFIELD_INIT_FILLED);
     _pool10 = new_bitfield(mem_size >> 10, BITFIELD_INIT_FILLED);
  
     /* Marked untyped as available */
-    for(i = 0; i < mem_size >> 14; i++){
-        bf_clr(_pool14, i);
+    for(i = 0; i < mem_size >> 24; i++){
+        bf_clr(_pool24, i);
     }
 
     /* Initialise sub allocators */
@@ -390,6 +399,7 @@ seL4_Word ut_alloc(int sizebits){
     case 10:
     case 12:
     case 14:
+    case 24:
         addr = do_ut_alloc_from_bitfield(sizebits);
         break;
     default:
@@ -413,6 +423,7 @@ void ut_free(seL4_Word addr, int sizebits){
     case 10:
     case 12:
     case 14:
+    case 24:
         do_ut_free_from_bitfield(addr, sizebits);
         break;
     default:

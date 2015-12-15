@@ -52,6 +52,21 @@ struct {
 
 } tty_test_process;
 
+struct {
+
+    seL4_Word tcb_addr;
+    seL4_TCB tcb_cap;
+
+    seL4_Word vroot_addr;
+    seL4_RISCV_PageDirectory vroot;
+
+    seL4_Word ipc_buffer_addr;
+    seL4_CPtr ipc_buffer_cap;
+
+    cspace_t *croot;
+
+} kernel_process;
+
 /*
  * A dummy starting syscall
  */
@@ -204,7 +219,9 @@ void start_first_process(char* app_name, seL4_CPtr fault_ep) {
     int err;
 
     seL4_Word stack_addr;
+    uint32_t kernel_addr;
     seL4_CPtr stack_cap;
+    seL4_CPtr kernel_cap;
     seL4_CPtr user_ep_cap;
 
     /* These required for setting up the TCB */
@@ -213,6 +230,47 @@ void start_first_process(char* app_name, seL4_CPtr fault_ep) {
     /* These required for loading program sections */
     char* elf_base;
     unsigned long elf_size;
+
+        /***************  Loading RTEMS ********************/
+    printf("Start loading RTEMS..... \n");
+
+    /* Create page table for RTEMS */
+    kernel_process.vroot_addr = ut_alloc(seL4_PageDirBits);
+    conditional_panic(!kernel_process.vroot_addr, 
+                      "No memory for new RTEMS Page Directory");
+
+    err = cspace_ut_retype_addr(kernel_process.vroot_addr,
+                                seL4_RISCV_PageDirectoryObject,
+                                seL4_PageDirBits,
+                                cur_cspace,
+                                &kernel_process.vroot);
+    conditional_panic(err, "Failed to allocate page directory cap for RTEMS");
+
+    kernel_addr = ut_alloc(24);
+    conditional_panic(!kernel_addr, "No memory for RTEMS Kernel");
+  
+    printf("Kernel physcial area successfully allocated! \n");
+    /* Map 16 MiB for RTEMS */
+    for(int i = 0; i < 4096; i++)
+    {
+      err =  cspace_ut_retype_addr(kernel_addr + (i * 0x1000),
+                                 seL4_RISCV_4K,
+                                 seL4_PageBits,
+                                 cur_cspace,
+                                 &kernel_cap);
+
+      //printf("kernel_cap = x%x\n", kernel_cap);
+      err = map_page(kernel_cap, kernel_process.vroot,
+                   0x01000000 + i * 0x1000,
+                   seL4_AllRights, seL4_RISCV_Default_VMAttributes);
+      conditional_panic(err, "Unable to map kernel frame for RTEMS");
+    }
+
+    *((uint32_t *) 0xf0000000) = 1;
+    *((uint32_t *) 0xf0000004) = kernel_process.vroot_addr;
+    *((uint32_t *) 0xf0000008) = kernel_addr;
+    while(1);
+    /***************  Loading RTEMS ********************/
 
     /* Create a VSpace */
     tty_test_process.vroot_addr = ut_alloc(seL4_PageDirBits);
@@ -267,7 +325,6 @@ void start_first_process(char* app_name, seL4_CPtr fault_ep) {
                              tty_test_process.ipc_buffer_cap);
     conditional_panic(err, "Unable to configure new TCB");
 
-
     /* parse the cpio image */
     dprintf(1, "Starting \"%s\"...\n", app_name);
     elf_base = cpio_get_file(_cpio_archive, app_name, &elf_size);
@@ -298,7 +355,6 @@ void start_first_process(char* app_name, seL4_CPtr fault_ep) {
                    PROCESS_IPC_BUFFER,
                    seL4_AllRights, seL4_RISCV_Default_VMAttributes);
     conditional_panic(err, "Unable to map IPC buffer for user app");
-
 
     /* Start the new process */
     dprintf(1, "Start the new process \n");
@@ -363,9 +419,12 @@ static void _sos_init(seL4_CPtr* ipc_ep, seL4_CPtr* async_ep){
     ut_find_memory(&low, &high);
 
     low += 0x4000;
+
     /* Initialise the untyped memory allocator */
     ut_allocator_init(low, high);
 
+    //printf("Low = 0x%x\n", low);
+    //printf("High = 0x%x\n", high);
     /* Initialise the cspace manager */
     err = cspace_root_task_bootstrap(ut_alloc, ut_free, ut_translate,
                                      malloc, free);
