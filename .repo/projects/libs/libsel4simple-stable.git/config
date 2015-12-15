@@ -1,7 +1,0 @@
-[core]
-	repositoryformatversion = 0
-	filemode = true
-[remote "heshamelmatary"]
-	url = https://github.com/heshamelmatary/libsel4simple-stable.git
-	projectname = libsel4simple-stable.git
-	fetch = +refs/heads/*:refs/remotes/heshamelmatary/*

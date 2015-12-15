@@ -1,7 +1,0 @@
-[core]
-	repositoryformatversion = 0
-	filemode = true
-[remote "heshamelmatary"]
-	url = https://github.com/heshamelmatary/sel4-riscv.git
-	projectname = sel4-riscv.git
-	fetch = +refs/heads/*:refs/remotes/heshamelmatary/*

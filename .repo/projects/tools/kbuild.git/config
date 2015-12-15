@@ -1,7 +1,0 @@
-[core]
-	repositoryformatversion = 0
-	filemode = true
-[remote "heshamelmatary"]
-	url = https://github.com/heshamelmatary/kbuild-tool.git
-	projectname = kbuild-tool.git
-	fetch = +refs/heads/*:refs/remotes/heshamelmatary/*

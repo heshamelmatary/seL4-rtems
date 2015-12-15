@@ -1,4 +1,0 @@
-6b04302ff39e882386f374254d9557e1bd164a43 1d1f023c9f4602e6d5c7be4c94763d7e4bd54ee3 Hesham Almatary <heshamelmatary@gmail.com> 1450200864 +0000	commit: Refactor elfloader to enable loading other kernel images
-1d1f023c9f4602e6d5c7be4c94763d7e4bd54ee3 6b04302ff39e882386f374254d9557e1bd164a43 Hesham Almatary <heshamelmatary@gmail.com> 1450201121 +0000	checkout: moving from 1d1f023c9f4602e6d5c7be4c94763d7e4bd54ee3 to master
-6b04302ff39e882386f374254d9557e1bd164a43 7275b103ce1ba59752837e60b9cbedd3cbd69d29 Hesham Almatary <heshamelmatary@gmail.com> 1450201299 +0000	commit: Enable loading/running other kernels to other cores
-7275b103ce1ba59752837e60b9cbedd3cbd69d29 2fc401bcbdc45ef61ffc0606764eb1c8a74bc3a5 Hesham Almatary <heshamelmatary@gmail.com> 1450201540 +0000	commit: Modify the script to include RTEMS image part of cpio archive
